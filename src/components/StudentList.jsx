@@ -31,6 +31,8 @@ const StudentList = () => {
               <th className="py-3 px-4 text-left font-semibold">Email</th>
               <th className="py-3 px-4 text-left font-semibold">Phone</th>
               <th className="py-3 px-4 text-left font-semibold">Address</th>
+              <th className="py-3 px-4 text-left font-semibold">Guardian Name</th>
+              <th className="py-3 px-4 text-left font-semibold">Guardian Contact</th>
             </tr>
           </thead>
 
@@ -51,6 +53,8 @@ const StudentList = () => {
                   <td className="py-3 px-4">{s.email}</td>
                   <td className="py-3 px-4">{s.phone}</td>
                   <td className="py-3 px-4">{s.address}</td>
+                  <td className="py-3 px-4">{s.guardianName || '-'}</td>
+                  <td className="py-3 px-4">{s.guardianContact || '-'}</td>
                 </tr>
               ))
             ) : (

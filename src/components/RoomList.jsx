@@ -17,12 +17,12 @@ const RoomList = () => {
   }, []);
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <h3 className="text-3xl font-bold text-blue-600 mb-6 text-center flex items-center justify-center gap-2">
+    <div className="p-6 min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      <h3 className="text-3xl font-bold text-blue-700 mb-6 text-center flex items-center justify-center gap-2">
         🏠 Room List
       </h3>
 
-      <div className="overflow-x-auto shadow-md rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto shadow-lg rounded-xl border border-gray-200 bg-white/90 backdrop-blur-sm">
         <table className="min-w-full text-sm text-gray-700">
           <thead className="bg-blue-600 text-white">
             <tr>
@@ -59,7 +59,9 @@ const RoomList = () => {
                         ))}
                       </ul>
                     ) : (
-                      <span className="text-gray-400 italic">No students assigned</span>
+                      <span className="text-gray-400 italic">
+                        No students assigned
+                      </span>
                     )}
                   </td>
                 </tr>

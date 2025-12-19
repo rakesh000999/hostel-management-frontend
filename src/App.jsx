@@ -8,6 +8,8 @@ import Home from './pages/Home'
 import Students from './pages/students'
 import Fees from './pages/Fees'
 import Rooms from './pages/Rooms'
+import ViewStudentDetail from './pages/ViewStudentDetail'
+import Bookings from './pages/Bookings'
 
 function App() {
 
@@ -18,8 +20,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/students" element={<Students />} />
+          <Route path="/students/:id" element={<ViewStudentDetail />} />
           <Route path="/fees" element={<Fees />} />
           <Route path="/rooms" element={<Rooms />} />
+          <Route path='/bookings' element={<Bookings />} />
         </Routes>
       </BrowserRouter>
 

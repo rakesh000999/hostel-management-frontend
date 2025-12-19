@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import { Link } from "react-router-dom";
+import ViewStudentDetail from "../pages/ViewStudentDetail";
 
 const RoomList = () => {
   const [rooms, setRooms] = useState([]);
@@ -39,9 +41,8 @@ const RoomList = () => {
               rooms.map((r, index) => (
                 <tr
                   key={r.id}
-                  className={`border-b ${
-                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                  } hover:bg-blue-50 transition duration-150`}
+                  className={`border-b ${index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    } hover:bg-blue-50 transition duration-150`}
                 >
                   <td className="py-3 px-4 font-medium text-gray-900">
                     {r.roomNumber}
@@ -54,7 +55,7 @@ const RoomList = () => {
                       <ul className="list-decimal list-inside space-y-1">
                         {r.students.map((s) => (
                           <li key={s.id} className="text-gray-800">
-                            {s.name}
+                            <Link to={`/students/${s.id}`}>{s.name}</Link>
                           </li>
                         ))}
                       </ul>

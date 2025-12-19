@@ -28,12 +28,12 @@ const AddStudentForm = () => {
 
     const handlechange = (e) => {
         const { name, value } = e.target;
-        
+
         setStudent({ ...student, [name]: value });
 
     }
 
-    const handleSubmit = async (e) =>{
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const res = await api.post(`/students/room/${student.roomId}`, student);
@@ -43,7 +43,7 @@ const AddStudentForm = () => {
     return (
 
         <form onSubmit={handleSubmit}
-        className="max-w-md mx-auto bg-white shadow-lg rounded-xl p-6 space-y-4 border border-gray-200">
+            className="max-w-md mx-auto bg-white shadow-lg rounded-xl p-6 space-y-4 border border-gray-200">
             <h3 className="text-2xl text-blue-700 font-bold text-center mb-4">Add Student</h3>
 
             <div className="space-y-3">

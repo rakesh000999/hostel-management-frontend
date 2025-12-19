@@ -6,7 +6,7 @@ const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
-        <nav className="bg-blue-600 text-white shadow-md">
+        <nav className="bg-[#0E1524] shadow-black text-white shadow-md w-full ">
             <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
                 <h3 className="text-2xl font-bold tracking-wide">
@@ -15,10 +15,10 @@ const Navbar = () => {
 
                 {/* Desktop Links */}
                 <div className="hidden md:flex gap-8 font-medium">
-                    <Link to="/" className="hover:text-yellow-300 transition duration-200">
+                    <Link to="/" className="hover:text-[#ff5c00] transition duration-200">
                         Home
                     </Link>
-                    <Link to="/students" className="hover:text-yellow-300 transition duration-200">
+                    <Link to="/students" className="hover:text-[#ff5c00] transition duration-200">
                         Students
                     </Link>
                     <Link to="/rooms" className="hover:text-yellow-300 transition duration-200">
@@ -40,7 +40,7 @@ const Navbar = () => {
 
             {/* Mobile Dropdown Menu */}
             {isOpen && (
-                <div className="md:hidden bg-blue-700 border-t border-blue-500">
+                <div className="md:hidden bg-grey-700 border-t border-blue-500">
                     <div className="flex flex-col items-center gap-4 py-4 text-lg font-medium">
                         <Link
                             to="/"

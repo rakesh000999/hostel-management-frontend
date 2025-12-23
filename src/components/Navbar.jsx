@@ -27,6 +27,9 @@ const Navbar = () => {
                     <Link to="/fees" className="hover:text-yellow-300 transition duration-200">
                         Fees
                     </Link>
+                    <Link to="/login" className='bg-amber-600 px-3 py-1 rounded-3xl hover:bg-[#ff5c00] transition'>
+                        Login
+                    </Link>
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -69,6 +72,13 @@ const Navbar = () => {
                             className="hover:text-yellow-300 transition"
                         >
                             Fees
+                        </Link>
+                        <Link
+                            to="/login"
+                            onClick={() => setIsOpen(false)}
+                            className='bg-amber-600 px-3 py-1 rounded-3xl hover:bg-[#ff5c00] transition'
+                        >
+                            Login
                         </Link>
                     </div>
                 </div>

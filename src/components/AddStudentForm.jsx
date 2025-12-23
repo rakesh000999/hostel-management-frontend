@@ -1,149 +1,139 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 
 const AddStudentForm = () => {
-
-    const [room, setRoom] = useState('');
+    const [rooms, setRooms] = useState([]);
     const [student, setStudent] = useState({
         name: '',
-        age: '',
+        dob: '',
         gender: '',
+        nationality: '',
         email: '',
         phone: '',
         address: '',
         guardianName: '',
         guardianContact: '',
+        emergencyContact: '',
         roomId: '',
+        checkInDate: '',
+        checkOutDate: ''
+    });
 
+    const [files, setFiles] = useState({
+        identityDocument: null,
+        photo: null
     });
 
     useEffect(() => {
-        api.get('/rooms')
-            .then((res) => {
-                setRoom(res.data)
-                console.log(res.data);
-                console.log("asdf");
-            })
+        api.get('/rooms').then(res => setRooms(res.data));
     }, []);
 
-    const handlechange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
+        setStudent(prev => ({ ...prev, [name]: value }));
+    };
 
-        setStudent({ ...student, [name]: value });
-
-    }
+    const handleFileChange = (e) => {
+        const { name, files } = e.target;
+        setFiles(prev => ({ ...prev, [name]: files[0] }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const res = await api.post(`/students/room/${student.roomId}`, student);
-        alert('Student added successfully!');
-    }
+        const formData = new FormData();
+
+        Object.entries(student).forEach(([key, value]) =>
+            formData.append(key, value)
+        );
+
+        if (files.identityDocument) {
+            formData.append('identityDocument', files.identityDocument);
+        }
+        if (files.photo) {
+            formData.append('photo', files.photo);
+        }
+
+        await api.post(`/students/room/${student.roomId}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        alert('Student added successfully');
+    };
 
     return (
+        <form
+            onSubmit={handleSubmit}
+            className="max-w-5xl mx-auto bg-white shadow-xl rounded-xl p-8 mt-6 space-y-6"
+        >
+            <h2 className="text-3xl font-bold text-blue-700 text-center">
+                Student Registration
+            </h2>
 
-        <form onSubmit={handleSubmit}
-            className="max-w-md mx-auto bg-white shadow-lg rounded-xl p-6 space-y-4 border border-gray-200">
-            <h3 className="text-2xl text-blue-700 font-bold text-center mb-4">Add Student</h3>
+            
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input name="name" placeholder="Full Name" onChange={handleChange}
+                    className="input" required />
+                <input type="number" name="dob" placeholder="Year of Birth / Age"
+                    onChange={handleChange} className="input" required />
+                <input name="gender" placeholder="Gender"
+                    onChange={handleChange} className="input" />
+                <input name="nationality" placeholder="Nationality"
+                    onChange={handleChange} className="input" />
+                <input type="email" name="email" placeholder="Email"
+                    onChange={handleChange} className="input" />
+                <input name="phone" placeholder="Phone"
+                    onChange={handleChange} className="input" />
+                <input name="address" placeholder="Address"
+                    onChange={handleChange} className="input col-span-full" />
+            </section>
 
-            <div className="space-y-3">
-                <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='name'
-                    value={student.name}
-                    onChange={handlechange}
-                />
+            
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input name="guardianName" placeholder="Guardian Name"
+                    onChange={handleChange} className="input" />
+                <input name="guardianContact" placeholder="Guardian Contact"
+                    onChange={handleChange} className="input" />
+                <input name="emergencyContact" placeholder="Emergency Contact"
+                    onChange={handleChange} className="input" required />
 
-                <input
-                    type="number"
-                    placeholder="Age"
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='age'
-                    value={student.age}
-                    onChange={handlechange}
-                />
-
-                <input
-                    type="text"
-                    placeholder="Gender"
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='gender'
-                    value={student.gender}
-                    onChange={handlechange}
-                />
-
-                <input
-                    type="text"
-                    placeholder="Email"
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='email'
-                    value={student.email}
-                    onChange={handlechange}
-                />
-
-                <input
-                    type="text"
-                    placeholder="Phone Number"
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='phone'
-                    value={student.phone}
-                    onChange={handlechange}
-                />
-
-                <input
-                    type="text"
-                    placeholder="Address"
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='address'
-                    value={student.address}
-                    onChange={handlechange}
-                />
-
-                <input
-                    type="text"
-                    placeholder="Guardian Name"
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='guardianName'
-                    value={student.guardianName}
-                    onChange={handlechange}
-                />
-
-                <input
-                    type="text"
-                    placeholder="Guardian Contact"
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='guardianContact'
-                    value={student.guardianContact}
-                    onChange={handlechange}
-                />
-
-                <select
-                    className="w-full border border-gray-300 rounded-lg p-2 bg-white focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    name='roomId'
-                    value={student.roomId}
-                    onChange={handlechange}
-                >
+                <select name="roomId" onChange={handleChange}
+                    className="input bg-white" required>
                     <option value="">Select Room</option>
-                    {room &&
-                        room.map((r) => (
-                            <option key={r.id} value={r.id}>
-                                {r.roomNumber}
-                            </option>
-                        ))}
+                    {rooms.map(room => (
+                        <option key={room.id} value={room.id}>
+                            Room {room.roomNumber}
+                        </option>
+                    ))}
                 </select>
-            </div>
+
+                <input type="date" name="checkInDate"
+                    onChange={handleChange} className="input" />
+                <input type="date" name="checkOutDate"
+                    onChange={handleChange} className="input" />
+            </section>
+
+            
+            <section className="space-y-3">
+                <label className="font-semibold text-gray-700">Upload Documents</label>
+
+                <input type="file" name="identityDocument"
+                    onChange={handleFileChange}
+                    className="file-input" required />
+
+                <input type="file" name="photo"
+                    onChange={handleFileChange}
+                    className="file-input" />
+            </section>
 
             <button
                 type="submit"
-                className="w-full bg-green-500 text-white font-semibold py-2 rounded-lg mt-4 hover:bg-green-600 transition duration-200"
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition"
             >
-                Add Student
+                Register Student
             </button>
         </form>
+    );
+};
 
-    )
-}
-
-export default AddStudentForm
+export default AddStudentForm;

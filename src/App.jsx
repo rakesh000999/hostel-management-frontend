@@ -10,6 +10,7 @@ import Fees from './pages/Fees'
 import Rooms from './pages/Rooms'
 import ViewStudentDetail from './pages/ViewStudentDetail'
 import Bookings from './pages/Bookings'
+import Login from './pages/Login'
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
           <Route path="/fees" element={<Fees />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path='/bookings' element={<Bookings />} />
+          <Route path='/login' element={<Login />} />
         </Routes>
       </BrowserRouter>
 

@@ -1,5 +1,6 @@
 import AddStudentForm from '../components/AddStudentForm'
 import StudentList from '../components/StudentList'
+import ViewStudentDetail from './ViewStudentDetail'
 
 const Students = () => {
     return (
@@ -7,6 +8,7 @@ const Students = () => {
             <AddStudentForm />
             <hr />
             <StudentList />
+            <ViewStudentDetail/>
         </div>
     )
 }

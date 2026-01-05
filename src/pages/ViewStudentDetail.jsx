@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/axios";
+import StudentDocuments from "../components/StudentDocuments";
 
 const ViewStudentDetail = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,7 +15,7 @@ const ViewStudentDetail = () => {
       .then((res) => {
         setStudent(res.data);
         console.log(res.data);
-        
+
         setLoading(false);
       })
       .catch((err) => {
@@ -93,6 +94,7 @@ const ViewStudentDetail = () => {
             {student.guardianContact || "N/A"}
           </p>
         </div>
+        <StudentDocuments studentId={student.id} />
       </div>
     </div>
   );

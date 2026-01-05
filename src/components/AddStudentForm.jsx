@@ -69,7 +69,6 @@ const AddStudentForm = () => {
             <h2 className="text-3xl font-bold text-blue-700 text-center">
                 Student Registration
             </h2>
-
             
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input name="name" placeholder="Full Name" onChange={handleChange}

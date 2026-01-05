@@ -4,6 +4,7 @@ import api from '../api/axios';
 const StudentList = () => {
   const [students, setStudents] = useState([]);
 
+  // API Call
   useEffect(() => {
     api.get('/students')
       .then((res) => {

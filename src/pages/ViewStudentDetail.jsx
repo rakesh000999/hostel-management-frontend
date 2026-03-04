@@ -25,6 +25,7 @@ const ViewStudentDetail = () => {
       });
   }, [id]);
 
+  // Show loading till the data is being fetched
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center text-gray-600 text-lg">
@@ -69,10 +70,10 @@ const ViewStudentDetail = () => {
             <span className="font-semibold text-gray-900">Phone:</span>{" "}
             {student.phone || "N/A"}
           </p>
-          <p>
+          {/* <p>
             <span className="font-semibold text-gray-900">Age:</span>{" "}
             {student.age || "N/A"}
-          </p>
+          </p> */}
           <p>
             <span className="font-semibold text-gray-900">Gender:</span>{" "}
             {student.gender || "N/A"}

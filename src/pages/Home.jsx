@@ -1,84 +1,79 @@
 import React from 'react'
 import Footer from '../components/Footer'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+
+import { useContext } from 'react';
+import AuthContext from '../context/AuthContext';
 
 const Home = () => {
+    const { isAuthenticated, user } = useContext(AuthContext);
+    const location = useLocation();
+    const message = location.state?.message;
+
     return (
-        <main className='min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'>
-            {/* // <main className='min-h-screen bg-linear-to-r from-blue-400 to-purple-500 opacity-20'> */}
-            <div div className=' flex justify-center gap-20' >
-                <div className='mt-5'>
+        <main className='min-h-screen bg-gradient-to-br from-indigo-900 via-gray-900 to-black text-gray-100'>
+            <header className="relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-800 via-transparent to-indigo-900 opacity-60"></div>
+                <div className="max-w-6xl mx-auto px-6 py-24 relative z-10 flex flex-col md:flex-row items-center gap-10">
+                    <div className="md:w-1/2">
+                        {message && (
+                            <p className="text-lg text-yellow-300 mb-3">{message}</p>
+                        )}
+                        {isAuthenticated && (
+                            <p className="text-lg text-green-300 mb-3">Welcome back, {user?.name}!</p>
+                        )}
+                        <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
+                            A Home Away From Home
+                        </h1>
+                        <p className="text-gray-300 mb-6 max-w-xl">
+                            Comfortable, safe and affordable hostel accommodations with easy booking and friendly staff. Join our community today and enjoy hassle-free living.
+                        </p>
 
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold pt-24">
-                        <span className="text-white">Join Family</span>
-                        <br />
-                        <span className="bg-linear-to-r bg-clip-text text-transparent bg-[#ff5c00]" style={{ backgroundImage: 'linear-gradient(to right, rgb(59, 130, 246), rgb(6, 182, 212));', }}>Create Experience</span>
-                    </h1>
-                    <Link to={'bookings/'}>
-                        <button className='font-bold text-amber-50 text-2xl bg-amber-700 mt-3 px-3 py-2 rounded hover:bg-blue-800 hover:cursor-pointer'>
-                            Book <span className='text-green-500'>Now</span>
-                        </button>
-                    </Link>
-                </div>
-                <div className='mt-5'>
+                        <div className="flex flex-wrap gap-4">
+                            <Link to={isAuthenticated ? (user?.role === 'STUDENT' ? '/student-request' : '/dashboard') : '/bookings'}>
+                                <button className='inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white px-5 py-3 rounded-lg shadow-lg'>
+                                    {isAuthenticated ? (
+                                        user?.role === 'STUDENT' ? 'Request Room' : 'Go to Dashboard'
+                                    ) : (
+                                        <>Book Now</>
+                                    )}
+                                </button>
+                            </Link>
 
-                    <img src="https://www.buildofy.com/blog/content/images/2022/06/_DSC9610-Edited_-min.jpg" alt="" className='h-80 w-96 object-cover rounded-2xl' />
-                </div>
-            </div >
-
-            <section className="p-2">
-                <p className="mb-3 text-amber-50 text-4xl font-bold">Insights of our home</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-
-                    <div className="space-y-4">
-
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <img
-                                src="https://res.cloudinary.com/dw4e01qx8/f_auto,q_auto/images/c0kbttkjbzi4t45fufle"
-                                className="rounded-lg w-full h-auto object-cover"
-                                alt=""
-                            />
-                            <img
-                                src="https://res.cloudinary.com/dw4e01qx8/f_auto,q_auto/images/c0kbttkjbzi4t45fufle"
-                                className="rounded-lg w-full h-auto object-cover"
-                                alt=""
-                            />
-
+                            <Link to="/rooms">
+                                <button className='inline-flex items-center gap-2 bg-transparent border border-gray-600 hover:border-amber-500 text-gray-200 px-5 py-3 rounded-lg'>View Rooms</button>
+                            </Link>
                         </div>
-
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <img
-                                src="https://www.mymodernhome.com/media/images/MMH-No23-3840x2160_.e6f02ed0.fill-1920x1080.format-webp.webp"
-                                className="rounded-lg w-full h-auto object-cover"
-                                alt=""
-                            />
-                            <img
-                                src="https://www.mymodernhome.com/media/images/MMH-No23-3840x2160_.e6f02ed0.fill-1920x1080.format-webp.webp"
-                                className="rounded-lg w-full h-auto object-cover"
-                                alt=""
-                            />
-                        </div>
-
                     </div>
 
-
-                    <div>
-                        <img
-                            src="https://www.mymodernhome.com/media/images/MMH-No23-3840x2160_.e6f02ed0.fill-1920x1080.format-webp.webp"
-                            className="rounded-lg w-full h-auto object-cover"
-                            alt=""
-                        />
+                    <div className="md:w-1/2 flex justify-center">
+                        <div className="rounded-3xl overflow-hidden shadow-2xl w-full max-w-md">
+                            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=60" alt="hostel" className="w-full h-72 object-cover" />
+                        </div>
                     </div>
+                </div>
+            </header>
 
+            <section className="max-w-6xl mx-auto px-6 py-12">
+                <h2 className="text-3xl font-bold text-white mb-6">Why choose us</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gray-800 p-6 rounded-xl shadow-md">
+                        <h3 className="text-xl font-semibold mb-2">Safe & Secure</h3>
+                        <p className="text-gray-300">24/7 security with CCTV and strict access controls to keep residents safe.</p>
+                    </div>
+                    <div className="bg-gray-800 p-6 rounded-xl shadow-md">
+                        <h3 className="text-xl font-semibold mb-2">Affordable Pricing</h3>
+                        <p className="text-gray-300">Multiple plans to suit student budgets with easy monthly payments.</p>
+                    </div>
+                    <div className="bg-gray-800 p-6 rounded-xl shadow-md">
+                        <h3 className="text-xl font-semibold mb-2">Community Events</h3>
+                        <p className="text-gray-300">Regular community activities and support to make you feel at home.</p>
+                    </div>
                 </div>
             </section>
 
             <Footer />
-        </main >
+        </main>
     )
 }
 

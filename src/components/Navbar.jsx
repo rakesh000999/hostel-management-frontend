@@ -1,12 +1,19 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LogOut } from 'lucide-react'
+import AuthContext from '../context/AuthContext'
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false)
+    const { isAuthenticated, logout } = useContext(AuthContext)
+
+    // If user is authenticated, don't show this navbar (sidebar will be shown instead)
+    if (isAuthenticated) {
+        return null
+    }
 
     return (
-        <nav className="bg-[#0E1524] shadow-black text-white shadow-md w-full ">
+        <nav className="bg-[#0E1524] shadow-black text-white shadow-md w-full sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
                 <h3 className="text-2xl font-bold tracking-wide">
@@ -14,20 +21,14 @@ const Navbar = () => {
                 </h3>
 
                 {/* Desktop Links */}
-                <div className="hidden md:flex gap-8 font-medium">
+                <div className="hidden md:flex gap-8 font-medium items-center">
                     <Link to="/" className="hover:text-[#ff5c00] transition duration-200">
                         Home
                     </Link>
-                    <Link to="/students" className="hover:text-[#ff5c00] transition duration-200">
-                        Students
+                    <Link to="/register" className="text-gray-300 hover:text-[#ff5c00] transition duration-200">
+                        Sign Up
                     </Link>
-                    <Link to="/rooms" className="hover:text-yellow-300 transition duration-200">
-                        Rooms
-                    </Link>
-                    <Link to="/fees" className="hover:text-yellow-300 transition duration-200">
-                        Fees
-                    </Link>
-                    <Link to="/login" className='bg-amber-600 px-3 py-1 rounded-3xl hover:bg-[#ff5c00] transition'>
+                    <Link to="/login" className='bg-indigo-600 px-4 py-2 rounded-full hover:bg-indigo-700 transition font-semibold'>
                         Login
                     </Link>
                 </div>
@@ -43,7 +44,7 @@ const Navbar = () => {
 
             {/* Mobile Dropdown Menu */}
             {isOpen && (
-                <div className="md:hidden bg-grey-700 border-t border-blue-500">
+                <div className="md:hidden bg-[#1a2332] border-t border-blue-500">
                     <div className="flex flex-col items-center gap-4 py-4 text-lg font-medium">
                         <Link
                             to="/"
@@ -53,30 +54,16 @@ const Navbar = () => {
                             Home
                         </Link>
                         <Link
-                            to="/students"
+                            to="/register"
                             onClick={() => setIsOpen(false)}
                             className="hover:text-yellow-300 transition"
                         >
-                            Students
-                        </Link>
-                        <Link
-                            to="/rooms"
-                            onClick={() => setIsOpen(false)}
-                            className="hover:text-yellow-300 transition"
-                        >
-                            Rooms
-                        </Link>
-                        <Link
-                            to="/fees"
-                            onClick={() => setIsOpen(false)}
-                            className="hover:text-yellow-300 transition"
-                        >
-                            Fees
+                            Sign Up
                         </Link>
                         <Link
                             to="/login"
                             onClick={() => setIsOpen(false)}
-                            className='bg-amber-600 px-3 py-1 rounded-3xl hover:bg-[#ff5c00] transition'
+                            className='bg-indigo-600 px-4 py-2 rounded-full hover:bg-indigo-700 transition w-32 text-center font-semibold'
                         >
                             Login
                         </Link>

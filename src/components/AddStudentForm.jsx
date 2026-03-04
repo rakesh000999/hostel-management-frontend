@@ -19,6 +19,9 @@ const AddStudentForm = () => {
         checkOutDate: ''
     });
 
+    // can only select date from today's date
+    // const today = new Date().toISOString().split("T")[0];
+
     const [files, setFiles] = useState({
         identityDocument: null,
         photo: null
@@ -59,6 +62,23 @@ const AddStudentForm = () => {
         });
 
         alert('Student added successfully');
+
+        setStudent({
+            name: '',
+            dob: '',
+            gender: '',
+            nationality: '',
+            email: '',
+            phone: '',
+            address: '',
+            guardianName: '',
+            guardianContact: '',
+            emergencyContact: '',
+            roomId: '',
+            checkInDate: '',
+            checkOutDate: ''
+        })
+
     };
 
     return (
@@ -69,7 +89,7 @@ const AddStudentForm = () => {
             <h2 className="text-3xl font-bold text-blue-700 text-center">
                 Student Registration
             </h2>
-            
+
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input name="name" placeholder="Full Name" onChange={handleChange}
                     className="input" required />
@@ -87,7 +107,7 @@ const AddStudentForm = () => {
                     onChange={handleChange} className="input col-span-full" />
             </section>
 
-            
+
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input name="guardianName" placeholder="Guardian Name"
                     onChange={handleChange} className="input" />
@@ -106,13 +126,13 @@ const AddStudentForm = () => {
                     ))}
                 </select>
 
-                <input type="date" name="checkInDate"
+                {/* <input type="date" name="checkInDate" min={today}
                     onChange={handleChange} className="input" />
-                <input type="date" name="checkOutDate"
-                    onChange={handleChange} className="input" />
+                <input type="date" name="checkOutDate" min={today}
+                    onChange={handleChange} className="input" /> */}
             </section>
 
-            
+
             <section className="space-y-3">
                 <label className="font-semibold text-gray-700">Upload Documents</label>
 

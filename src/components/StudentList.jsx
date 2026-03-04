@@ -26,8 +26,8 @@ const StudentList = () => {
             <tr>
               <th className="py-3 px-4 text-left font-semibold">ID</th>
               <th className="py-3 px-4 text-left font-semibold">Name</th>
-              <th className="py-3 px-4 text-left font-semibold">Room No.</th>
-              <th className="py-3 px-4 text-left font-semibold">Age</th>
+              {/* <th className="py-3 px-4 text-left font-semibold">Room No.</th> */}
+              {/* <th className="py-3 px-4 text-left font-semibold">Age</th> */}
               <th className="py-3 px-4 text-left font-semibold">Gender</th>
               <th className="py-3 px-4 text-left font-semibold">Email</th>
               <th className="py-3 px-4 text-left font-semibold">Phone</th>
@@ -48,8 +48,8 @@ const StudentList = () => {
                 >
                   <td className="py-3 px-4">{s.id}</td>
                   <td className="py-3 px-4 font-medium text-gray-900">{s.name}</td>
-                  <td className="py-3 px-4">{s.room?.roomNumber || '-'}</td>
-                  <td className="py-3 px-4">{s.age}</td>
+                  {/* <td className="py-3 px-4">{s.room?.roomNumber || '-'}</td> */}
+                  {/* <td className="py-3 px-4">{s.age}</td> */}
                   <td className="py-3 px-4">{s.gender}</td>
                   <td className="py-3 px-4">{s.email}</td>
                   <td className="py-3 px-4">{s.phone}</td>

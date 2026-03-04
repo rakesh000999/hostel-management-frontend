@@ -18,7 +18,11 @@ const AddRoomForm = () => {
     try {
       await api.post("/rooms", room);
       alert("Room added successfully!");
-      setRoom({ roomNumber: "", capacity: "", rentPerMonth: "Rs. " });
+      setRoom({
+        roomNumber: "",
+        capacity: "",
+        rentPerMonth: "Rs. "
+      });
     } catch (error) {
       console.error(error);
       alert("Failed to add room.");

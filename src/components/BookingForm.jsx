@@ -11,6 +11,8 @@ const BookingForm = () => {
         checkOutDate: "",
     })
 
+    const today = new Date().toISOString().split("T")[0];
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
@@ -82,6 +84,7 @@ const BookingForm = () => {
                             </label>
                             <input
                                 type="date"
+                                min={today}
                                 name="checkInDate"
                                 value={formData.checkInDate}
                                 onChange={handleChange}
@@ -96,6 +99,7 @@ const BookingForm = () => {
                             </label>
                             <input
                                 type="date"
+                                min={today}
                                 name="checkOutDate"
                                 value={formData.checkOutDate}
                                 onChange={handleChange}

@@ -38,6 +38,7 @@ const Sidebar = () => {
     } else {
         // default to student menu
         menuItems = [
+            { path: '/browse-rooms', label: 'Browse Rooms', icon: DoorOpen },
             { path: '/student-request', label: 'Request Room', icon: Users },
             { path: '/my-requests', label: 'My Requests', icon: Calendar },
             { path: '/notifications', label: `Notifications${unreadCount > 0 ? ` (${unreadCount})` : ''}`, icon: CreditCard },

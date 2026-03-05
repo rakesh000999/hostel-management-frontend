@@ -16,14 +16,29 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Handle 401 responses (unauthorized)
+// Handle responses and errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error("API Error:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+    });
+
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
+
+    // Handle network errors
+    if (!error.response) {
+      console.error(
+        "Network error - backend may not be running at localhost:8080",
+      );
+    }
+
     return Promise.reject(error);
   },
 );

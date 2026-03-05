@@ -61,8 +61,14 @@ export const AuthProvider = ({ children }) => {
     const login = useCallback(async (email, password) => {
         try {
             setError(null);
+            console.log("Attempting login with email:", email);
             const response = await api.post("/auth/login", { email, password });
+            console.log("Login response:", response.data);
             const { token: newToken } = response.data;
+
+            if (!newToken) {
+                throw new Error("No token received from server");
+            }
 
             // Store token
             localStorage.setItem("token", newToken);
@@ -72,11 +78,21 @@ export const AuthProvider = ({ children }) => {
             const userResponse = await api.get("/auth/me", {
                 headers: { Authorization: `Bearer ${newToken}` },
             });
+            console.log("User details:", userResponse.data);
             setUser(userResponse.data);
             return userResponse.data;
         } catch (err) {
+            console.error("Login error details:", {
+                status: err.response?.status,
+                data: err.response?.data,
+                message: err.message,
+                url: err.config?.url,
+            });
             const errorMessage =
-                err.response?.data?.message || "Login failed. Please try again.";
+                err.response?.data?.message ||
+                err.response?.data?.error ||
+                err.message ||
+                "Login failed. Please check your credentials and try again.";
             setError(errorMessage);
             throw err;
         }

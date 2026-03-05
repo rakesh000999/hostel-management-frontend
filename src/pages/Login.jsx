@@ -26,6 +26,10 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.email || !formData.password) {
+      setError("Please enter both email and password");
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -40,6 +44,8 @@ const Login = () => {
       }
     } catch (err) {
       console.error("Login error:", err);
+      const errorMsg = err.response?.data?.message || err.message || "Login failed";
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

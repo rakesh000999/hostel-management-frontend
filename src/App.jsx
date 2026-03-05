@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard'
 import Students from './pages/Students'
 import Fees from './pages/Fees'
 import Rooms from './pages/Rooms'
+import BrowseRooms from './pages/BrowseRooms'
 import ViewStudentDetail from './pages/ViewStudentDetail'
 import Bookings from './pages/Bookings'
 import StudentRequest from './pages/StudentRequest'
@@ -34,6 +35,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path='/bookings' element={<Bookings />} />
+            <Route path="/browse-rooms" element={<BrowseRooms />} />
             <Route path="/student-request" element={<ProtectedRoute roles={["STUDENT"]}><StudentRequest /></ProtectedRoute>} />
             <Route path="/my-requests" element={<ProtectedRoute roles={["STUDENT"]}><MyRequests /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />

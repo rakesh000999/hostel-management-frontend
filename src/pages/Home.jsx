@@ -40,7 +40,7 @@ const Home = () => {
                                 </button>
                             </Link>
 
-                            <Link to="/rooms">
+                            <Link to={isAuthenticated ? (user?.role === 'STUDENT' ? '/browse-rooms' : '/rooms') : '/browse-rooms'}>
                                 <button className='inline-flex items-center gap-2 bg-transparent border border-gray-600 hover:border-amber-500 text-gray-200 px-5 py-3 rounded-lg'>View Rooms</button>
                             </Link>
                         </div>

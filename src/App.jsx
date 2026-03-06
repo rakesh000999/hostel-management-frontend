@@ -1,6 +1,3 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import Navbar from './components/Navbar'
 import DashboardLayout from './components/DashboardLayout'
@@ -15,12 +12,12 @@ import Rooms from './pages/Rooms'
 import BrowseRooms from './pages/BrowseRooms'
 import ViewStudentDetail from './pages/ViewStudentDetail'
 import Bookings from './pages/Bookings'
-import StudentRequest from './pages/StudentRequest'
-import MyRequests from './pages/MyRequests'
 import Notifications from './pages/Notifications'
-import PendingRequests from './pages/PendingRequests'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import HostelRequestForm from './pages/student/HostelRequestForm'
+import MyRequestStatus from './pages/student/MyRequestStatus'
+import RequestQueue from './pages/admin/RequestQueue'
 
 function App() {
 
@@ -36,10 +33,10 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path='/bookings' element={<Bookings />} />
             <Route path="/browse-rooms" element={<BrowseRooms />} />
-            <Route path="/student-request" element={<ProtectedRoute roles={["STUDENT"]}><StudentRequest /></ProtectedRoute>} />
-            <Route path="/my-requests" element={<ProtectedRoute roles={["STUDENT"]}><MyRequests /></ProtectedRoute>} />
+            <Route path="/student-request" element={<ProtectedRoute roles={["STUDENT"]}><HostelRequestForm /></ProtectedRoute>} />
+            <Route path="/my-requests" element={<ProtectedRoute roles={["STUDENT"]}><MyRequestStatus /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-            <Route path="/pending-requests" element={<ProtectedRoute roles={["ADMIN"]}><PendingRequests /></ProtectedRoute>} />
+            <Route path="/pending-requests" element={<ProtectedRoute roles={["ADMIN"]}><RequestQueue /></ProtectedRoute>} />
 
             {/* Protected Routes */}
             <Route path="/dashboard" element={<ProtectedRoute roles={["ADMIN"]}><Dashboard /></ProtectedRoute>} />

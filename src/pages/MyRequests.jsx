@@ -9,6 +9,13 @@ const badgeStyles = {
     CANCELLED: 'bg-gray-200 text-gray-800'
 };
 
+const statusLabels = {
+    PENDING: 'Pending',
+    APPROVED: 'Approved',
+    REJECTED: 'Rejected',
+    ROOM_ASSIGNED: 'Room Assigned'
+};
+
 const MyRequests = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,9 +25,9 @@ const MyRequests = () => {
         const fetch = async () => {
             try {
                 const res = await getMyRequests();
-                setRequests(res);
+                setRequests(Array.isArray(res) ? res : []);
             } catch (err) {
-                setError('Failed to load requests');
+                setError(err?.response?.data?.message || 'Failed to load requests');
             } finally {
                 setLoading(false);
             }
@@ -43,7 +50,7 @@ const MyRequests = () => {
                         <div className="flex justify-between items-center">
                             <h3 className="font-semibold">{req.fullName}</h3>
                             <span className={`px-2 py-1 rounded ${badgeStyles[req.status] || 'bg-gray-200'}`}>
-                                {req.status.replace('_', ' ')}
+                                {statusLabels[req.status] || String(req.status || 'Unknown').replace('_', ' ')}
                             </span>
                         </div>
                         <p className="text-sm text-gray-600">Submitted: {new Date(req.submittedAt).toLocaleString()}</p>

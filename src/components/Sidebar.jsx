@@ -1,18 +1,17 @@
-import React, { useState, useContext } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { LogOut, Menu, X, Home, Users, DoorOpen, CreditCard, Calendar } from 'lucide-react'
-import { getUnreadCount } from '../api/notificationApi'
-import AuthContext from '../context/AuthContext'
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { LogOut, Menu, X, Home, Users, DoorOpen, CreditCard, Calendar } from 'lucide-react';
+import { getUnreadCount } from '../api/notificationApi';
+import AuthContext from '../context/AuthContext';
 
-const Sidebar = () => {
-    const [isOpen, setIsOpen] = useState(true)
-    const { user, logout } = useContext(AuthContext)
-    const navigate = useNavigate()
-    const location = useLocation()
+const Sidebar = ({ isOpen, setIsOpen }) => {
+    const [isCollapsedDesktop, setIsCollapsedDesktop] = useState(false);
+    const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const [unreadCount, setUnreadCount] = useState(0);
 
-    // fetch unread count when sidebar mounts
     React.useEffect(() => {
         const fetchCount = async () => {
             try {
@@ -25,6 +24,10 @@ const Sidebar = () => {
         fetchCount();
     }, []);
 
+    React.useEffect(() => {
+        setIsOpen(false);
+    }, [location.pathname, setIsOpen]);
+
     let menuItems = [];
     if (user?.role === 'ADMIN') {
         menuItems = [
@@ -33,48 +36,58 @@ const Sidebar = () => {
             { path: '/students', label: 'Students', icon: Users },
             { path: '/rooms', label: 'Rooms', icon: DoorOpen },
             { path: '/fees', label: 'Fees', icon: CreditCard },
-            { path: '/bookings', label: 'Bookings', icon: Calendar },
         ];
     } else {
-        // default to student menu
         menuItems = [
             { path: '/browse-rooms', label: 'Browse Rooms', icon: DoorOpen },
             { path: '/student-request', label: 'Request Room', icon: Users },
             { path: '/my-requests', label: 'My Requests', icon: Calendar },
-            { path: '/notifications', label: `Notifications${unreadCount > 0 ? ` (${unreadCount})` : ''}`, icon: CreditCard },
+            {
+                path: '/notifications',
+                label: `Notifications${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
+                icon: CreditCard,
+            },
         ];
     }
 
     const handleLogout = () => {
-        logout()
-        navigate('/')
-    }
+        logout();
+        navigate('/');
+    };
 
-    const isActive = (path) => location.pathname === path
+    const isActive = (path) => location.pathname === path;
+
+    const desktopWidthClass = isCollapsedDesktop ? 'lg:w-20' : 'lg:w-64';
+    const mobileTranslateClass = isOpen ? 'translate-x-0' : '-translate-x-full';
 
     return (
-        <div className="flex bg-gray-100 min-h-screen">
-            {/* Sidebar */}
+        <>
             <aside
-                className={`${isOpen ? 'w-64' : 'w-20'
-                    } bg-[#0E1524] text-white transition-all duration-300 fixed h-screen lg:relative overflow-y-auto z-40`}
+                className={`${mobileTranslateClass} lg:translate-x-0 ${desktopWidthClass} fixed lg:sticky top-0 left-0 h-screen w-64 bg-[#0E1524] text-white transition-all duration-300 z-40 overflow-y-auto`}
             >
-                {/* Header */}
-                <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-                    {isOpen && (
-                        <h3 className="text-xl font-bold">HMS</h3>
-                    )}
-                    <button
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="p-2 hover:bg-gray-700 rounded-lg transition hidden lg:block"
-                    >
-                        {isOpen ? <X size={20} /> : <Menu size={20} />}
-                    </button>
+                <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+                    {!isCollapsedDesktop && <h3 className="text-xl font-bold">HMS</h3>}
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="p-2 hover:bg-gray-700 rounded-lg transition lg:hidden"
+                            aria-label="Close sidebar"
+                        >
+                            <X size={20} />
+                        </button>
+                        <button
+                            onClick={() => setIsCollapsedDesktop((prev) => !prev)}
+                            className="p-2 hover:bg-gray-700 rounded-lg transition hidden lg:block"
+                            aria-label="Toggle sidebar width"
+                        >
+                            {isCollapsedDesktop ? <Menu size={20} /> : <X size={20} />}
+                        </button>
+                    </div>
                 </div>
 
-                {/* User Info */}
-                {isOpen && (
-                    <div className="p-6 border-b border-gray-700">
+                {!isCollapsedDesktop && (
+                    <div className="p-4 border-b border-gray-700">
                         <p className="text-sm text-gray-400">Logged in as</p>
                         <p className="font-semibold truncate">{user?.name}</p>
                         <p className="text-xs text-indigo-400 mt-1 uppercase font-semibold">
@@ -83,44 +96,42 @@ const Sidebar = () => {
                     </div>
                 )}
 
-                {/* Menu Items */}
-                <nav className="p-4 space-y-2">
+                <nav className="p-3 space-y-2">
                     {menuItems.map(({ path, label, icon: Icon }) => (
                         <Link
                             key={path}
                             to={path}
-                            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition ${isActive(path)
+                            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition ${isActive(path)
                                 ? 'bg-indigo-600 text-white'
                                 : 'text-gray-300 hover:bg-gray-700'
                                 }`}
+                            title={label}
                         >
                             <Icon size={20} />
-                            {isOpen && <span>{label}</span>}
+                            {!isCollapsedDesktop && <span>{label}</span>}
                         </Link>
                     ))}
                 </nav>
 
-                {/* Logout Button */}
-                <div className="p-4 border-t border-gray-700 mt-auto">
+                <div className="p-3 border-t border-gray-700 mt-auto">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-4 px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition text-white font-medium"
+                        className="w-full flex items-center gap-3 px-3 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition text-white font-medium"
                     >
                         <LogOut size={20} />
-                        {isOpen && <span>Logout</span>}
+                        {!isCollapsedDesktop && <span>Logout</span>}
                     </button>
                 </div>
             </aside>
 
-            {/* Mobile Overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-30"
+                    className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
                     onClick={() => setIsOpen(false)}
-                ></div>
+                />
             )}
-        </div>
-    )
-}
+        </>
+    );
+};
 
-export default Sidebar
+export default Sidebar;

@@ -1,7 +1,37 @@
 import api from "./axios";
 
-export const submitRequest = async (data) => {
-  const response = await api.post("/student-requests/submit", data);
+export const submitRequest = async (data, token) => {
+  if (!(data instanceof FormData)) {
+    throw new Error("submitRequest expects multipart FormData payload");
+  }
+
+  const authToken =
+    token?.replace(/^Bearer\s+/i, "").trim() ||
+    localStorage
+      .getItem("token")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim() ||
+    localStorage
+      .getItem("jwtToken")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim() ||
+    localStorage
+      .getItem("accessToken")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim() ||
+    localStorage
+      .getItem("authToken")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim();
+
+  const response = await api.post("/student-requests/submit", data, {
+    headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+  });
+  return response.data;
+};
+
+export const getMyStatus = async () => {
+  const response = await api.get("/student-requests/my-status");
   return response.data;
 };
 

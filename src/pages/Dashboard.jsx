@@ -1,149 +1,129 @@
-import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
-import AuthContext from '../context/AuthContext'
-import { Users, DoorOpen, CreditCard, TrendingUp } from 'lucide-react'
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
+import { ClipboardList, Clock, CheckCircle2, XCircle, Users } from 'lucide-react';
+import { getDashboardStats, getTotalStudentsCount } from '../api/dashboardApi';
 
 const Dashboard = () => {
-    const { user } = useContext(AuthContext)
-    const navigate = useNavigate()
+    const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
 
-    const stats = [
+    const [stats, setStats] = useState({
+        totalStudents: 0,
+        totalStudentRequests: 0,
+        pendingStudentRequests: 0,
+        approvedStudentRequests: 0,
+        rejectedStudentRequests: 0
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchDashboard = async () => {
+            try {
+                setLoading(true);
+                setError('');
+                const [dashboardResult, totalStudentsResult] = await Promise.allSettled([
+                    getDashboardStats(),
+                    getTotalStudentsCount(),
+                ]);
+
+                const response = dashboardResult.status === 'fulfilled' ? dashboardResult.value : {};
+                const totalStudents = totalStudentsResult.status === 'fulfilled' ? totalStudentsResult.value : 0;
+
+                setStats({
+                    totalStudents: Number(response?.totalStudents || totalStudents || 0),
+                    totalStudentRequests: Number(response?.totalStudentRequests || 0),
+                    pendingStudentRequests: Number(response?.pendingStudentRequests || 0),
+                    approvedStudentRequests: Number(response?.approvedStudentRequests || 0),
+                    rejectedStudentRequests: Number(response?.rejectedStudentRequests || 0)
+                });
+            } catch (err) {
+                setError(err?.response?.data?.message || 'Failed to load dashboard data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboard();
+    }, []);
+
+    const cards = [
         {
             title: 'Total Students',
-            count: '0',
+            count: stats.totalStudents,
             icon: Users,
-            color: 'bg-blue-500',
+            color: 'bg-sky-600',
             action: () => navigate('/students')
         },
         {
-            title: 'Total Rooms',
-            count: '0',
-            icon: DoorOpen,
-            color: 'bg-green-500',
-            action: () => navigate('/rooms')
+            title: 'Total Student Requests',
+            count: stats.totalStudentRequests,
+            icon: ClipboardList,
+            color: 'bg-blue-600',
+            action: () => navigate('/pending-requests')
         },
         {
-            title: 'Pending Fees',
-            count: '0',
-            icon: CreditCard,
-            color: 'bg-orange-500',
-            action: () => navigate('/fees')
+            title: 'Pending Student Requests',
+            count: stats.pendingStudentRequests,
+            icon: Clock,
+            color: 'bg-amber-600',
+            action: () => navigate('/pending-requests')
         },
         {
-            title: 'Revenue',
-            count: '₹0',
-            icon: TrendingUp,
-            color: 'bg-purple-500',
-            action: () => navigate('/fees')
+            title: 'Approved Student Requests',
+            count: stats.approvedStudentRequests,
+            icon: CheckCircle2,
+            color: 'bg-emerald-600',
+            action: () => navigate('/pending-requests')
+        },
+        {
+            title: 'Rejected Student Requests',
+            count: stats.rejectedStudentRequests,
+            icon: XCircle,
+            color: 'bg-red-600',
+            action: () => navigate('/pending-requests')
         }
-    ]
+    ];
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen">
-            {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">
-                    Welcome, {user?.name}! 👋
-                </h1>
-                <p className="text-gray-600 mt-2">
-                    Here's what's happening in your hostel today.
-                </p>
+                <h1 className="text-3xl font-bold text-gray-800">Welcome, {user?.name}</h1>
+                <p className="text-gray-600 mt-2">Student request overview from live backend metrics.</p>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {stats.map((stat, index) => {
-                    const Icon = stat.icon
+            {error && (
+                <div className="mb-6 p-3 rounded bg-red-100 text-red-700">{error}</div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-8">
+                {cards.map((card, index) => {
+                    const Icon = card.icon;
                     return (
-                        <div
+                        <button
+                            type="button"
                             key={index}
-                            onClick={stat.action}
-                            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition cursor-pointer"
+                            onClick={card.action}
+                            className="text-left bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
                         >
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-gray-600 text-sm font-medium">
-                                        {stat.title}
-                                    </p>
+                                    <p className="text-gray-600 text-sm font-medium">{card.title}</p>
                                     <p className="text-3xl font-bold text-gray-800 mt-2">
-                                        {stat.count}
+                                        {loading ? '...' : card.count}
                                     </p>
                                 </div>
-                                <div className={`${stat.color} p-4 rounded-lg`}>
-                                    <Icon className="text-white" size={28} />
+                                <div className={`${card.color} p-4 rounded-lg`}>
+                                    <Icon className="text-white" size={26} />
                                 </div>
                             </div>
-                        </div>
-                    )
+                        </button>
+                    );
                 })}
             </div>
-
-            {/* Main Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Recent Activity */}
-                <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-                    <h2 className="text-xl font-bold text-gray-800 mb-4">
-                        Recent Activity
-                    </h2>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between py-3 border-b">
-                            <div>
-                                <p className="font-medium text-gray-800">
-                                    New Student Registration
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                    Click on Students to view details
-                                </p>
-                            </div>
-                            <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-                                New
-                            </span>
-                        </div>
-                        <div className="flex items-center justify-between py-3 border-b">
-                            <div>
-                                <p className="font-medium text-gray-800">
-                                    Room Booking Request
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                    Check Bookings for pending requests
-                                </p>
-                            </div>
-                            <span className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
-                                Pending
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="bg-white rounded-lg shadow-md p-6">
-                    <h2 className="text-xl font-bold text-gray-800 mb-4">
-                        Quick Actions
-                    </h2>
-                    <div className="space-y-3">
-                        <button
-                            onClick={() => navigate('/students')}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg transition"
-                        >
-                            View Students
-                        </button>
-                        <button
-                            onClick={() => navigate('/rooms')}
-                            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition"
-                        >
-                            View Rooms
-                        </button>
-                        <button
-                            onClick={() => navigate('/fees')}
-                            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 rounded-lg transition"
-                        >
-                            View Fees
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
-    )
-}
+    );
+};
 
-export default Dashboard
+export default Dashboard;

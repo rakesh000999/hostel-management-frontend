@@ -3,9 +3,36 @@ import api from "../api/axios";
 
 export const AuthContext = createContext();
 
+const normalizeToken = (value) => {
+    if (!value || typeof value !== "string") {
+        return null;
+    }
+    return value.replace(/^Bearer\s+/i, "").trim();
+};
+
+const extractTokenFromLoginResponse = (payload) => {
+    const tokenCandidate =
+        payload?.token ||
+        payload?.jwtToken ||
+        payload?.accessToken ||
+        payload?.access_token ||
+        payload?.data?.token ||
+        payload?.data?.jwtToken ||
+        payload?.data?.accessToken;
+
+    return normalizeToken(tokenCandidate);
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(() => localStorage.getItem("token"));
+    const [token, setToken] = useState(() =>
+        normalizeToken(
+            localStorage.getItem("token") ||
+            localStorage.getItem("jwtToken") ||
+            localStorage.getItem("accessToken") ||
+            localStorage.getItem("authToken"),
+        ),
+    );
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const isInitialLoadRef = useRef(true);
@@ -64,7 +91,7 @@ export const AuthProvider = ({ children }) => {
             console.log("Attempting login with email:", email);
             const response = await api.post("/auth/login", { email, password });
             console.log("Login response:", response.data);
-            const { token: newToken } = response.data;
+            const newToken = extractTokenFromLoginResponse(response.data);
 
             if (!newToken) {
                 throw new Error("No token received from server");

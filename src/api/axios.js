@@ -4,10 +4,24 @@ const api = axios.create({
   baseURL: "http://localhost:8080/api",
 });
 
+const getStoredToken = () => {
+  const raw =
+    localStorage.getItem("token") ||
+    localStorage.getItem("jwtToken") ||
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("authToken");
+
+  if (!raw) {
+    return null;
+  }
+
+  return raw.replace(/^Bearer\s+/i, "").trim();
+};
+
 // Add JWT token to every request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = getStoredToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

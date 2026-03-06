@@ -1,178 +1,421 @@
 import React, { useState, useEffect } from 'react';
 import {
     getPendingRequests,
+    getAllRequests,
+    getRequestById,
     approveRequest,
     rejectRequest,
-    assignRoom
+    assignRoom,
+    unassignRoom
 } from '../api/studentRequestApi';
 import { getAvailableRooms } from '../api/roomsApi';
+import {
+    getStudentRequestPhotoBlob,
+    getStudentRequestIdentityBlob
+} from '../api/fileApi';
+
+const statusBadge = {
+    PENDING: 'bg-yellow-100 text-yellow-800',
+    APPROVED: 'bg-green-100 text-green-800',
+    REJECTED: 'bg-red-100 text-red-800',
+    ROOM_ASSIGNED: 'bg-indigo-100 text-indigo-800'
+};
 
 const PendingRequests = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [selectedRoom, setSelectedRoom] = useState({});
-    const [availableRooms, setAvailableRooms] = useState([]);
-    const [showAssignModal, setShowAssignModal] = useState(false);
-    const [assigningRequest, setAssigningRequest] = useState(null);
+    const [error, setError] = useState('');
+    const [listMode, setListMode] = useState('pending');
 
-    const fetch = async () => {
+    const [selectedRequestId, setSelectedRequestId] = useState(null);
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+    const [detailsError, setDetailsError] = useState('');
+
+    const [availableRooms, setAvailableRooms] = useState([]);
+    const [selectedRoomId, setSelectedRoomId] = useState('');
+
+    const [rejectReason, setRejectReason] = useState('');
+    const [actionLoading, setActionLoading] = useState(false);
+    const [actionMessage, setActionMessage] = useState('');
+
+    const validateSelectedRoomId = () => {
+        const parsedRoomId = Number(selectedRoomId);
+        if (!selectedRoomId) {
+            setActionMessage('Please select a room before approval.');
+            return null;
+        }
+        if (!Number.isInteger(parsedRoomId) || parsedRoomId <= 0) {
+            setActionMessage('Invalid room selected. Please choose a valid room.');
+            return null;
+        }
+        return parsedRoomId;
+    };
+
+    const fetchList = async (mode = listMode) => {
         try {
-            const res = await getPendingRequests();
-            setRequests(res);
+            setLoading(true);
+            setError('');
+            const res = mode === 'all' ? await getAllRequests() : await getPendingRequests();
+            setRequests(Array.isArray(res) ? res : []);
         } catch (err) {
-            setError('Failed to load pending requests');
+            setError(err?.response?.data?.message || 'Failed to load requests');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchAvailableRooms = async () => {
+    const fetchRooms = async () => {
         try {
             const rooms = await getAvailableRooms();
-            setAvailableRooms(rooms);
-        } catch (err) {
-            console.error('Failed to load available rooms');
+            const available = (rooms || []).filter(
+                (room) => Number(room.capacity) > Number(room.occupiedCount)
+            );
+            setAvailableRooms(available);
+        } catch {
+            setAvailableRooms([]);
         }
     };
 
     useEffect(() => {
-        fetch();
-        fetchAvailableRooms();
+        fetchList('pending');
+        fetchRooms();
     }, []);
 
-    const handleApprove = async (id) => {
+    useEffect(() => {
+        fetchList(listMode);
+    }, [listMode]);
+
+    const fetchRequestDetails = async (requestId) => {
         try {
-            await approveRequest(id);
-            fetch();
+            setDetailsLoading(true);
+            setDetailsError('');
+            setSelectedRequestId(requestId);
+            const res = await getRequestById(requestId);
+            setSelectedRequest(res);
+            if (res?.assignedRoomId) {
+                setSelectedRoomId(String(res.assignedRoomId));
+            } else {
+                setSelectedRoomId('');
+            }
         } catch (err) {
-            alert('Failed to approve request');
+            setDetailsError(err?.response?.data?.message || 'Failed to load request details');
+            setSelectedRequest(null);
+        } finally {
+            setDetailsLoading(false);
         }
     };
 
-    const handleReject = async (id) => {
-        const reason = prompt('Reason for rejection (required):');
-        if (!reason || !reason.trim()) {
-            alert('Rejection reason is required');
+    const refreshData = async () => {
+        await fetchList();
+        await fetchRooms();
+        if (selectedRequestId) {
+            await fetchRequestDetails(selectedRequestId);
+        }
+    };
+
+    const runAction = async (fn, successMessage) => {
+        try {
+            setActionLoading(true);
+            setActionMessage('');
+            await fn();
+            setActionMessage(successMessage);
+            await refreshData();
+        } catch (err) {
+            setActionMessage(err?.response?.data?.message || 'Action failed');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleApprove = () => {
+        if (!selectedRequestId) return;
+
+        const parsedRoomId = validateSelectedRoomId();
+        if (!parsedRoomId) return;
+
+        runAction(
+            async () => {
+                const requestStatus = String(selectedRequest?.status || '').toUpperCase();
+
+                // Try approve only when still pending; if backend says already approved, continue.
+                if (requestStatus !== 'APPROVED' && requestStatus !== 'ROOM_ASSIGNED') {
+                    try {
+                        await approveRequest(selectedRequestId);
+                    } catch (approveError) {
+                        const statusCode = approveError?.response?.status;
+                        const backendMessage = String(
+                            approveError?.response?.data?.message ||
+                            approveError?.response?.data?.error ||
+                            '',
+                        ).toLowerCase();
+
+                        const isSafeToContinue =
+                            statusCode === 409 ||
+                            backendMessage.includes('already approved') ||
+                            backendMessage.includes('invalid status') ||
+                            backendMessage.includes('cannot approve');
+
+                        if (!isSafeToContinue) {
+                            throw approveError;
+                        }
+                    }
+                }
+
+                await assignRoom(selectedRequestId, parsedRoomId);
+            },
+            'Request approved and room assigned successfully. Students page should sync now.'
+        );
+    };
+
+    const handleReject = () => {
+        if (!selectedRequestId) return;
+        if (!rejectReason.trim()) {
+            setActionMessage('Rejection reason is required');
             return;
         }
+
+        runAction(
+            () => rejectRequest(selectedRequestId, rejectReason.trim()),
+            'Request rejected successfully'
+        );
+    };
+
+    const handleAssignRoom = () => {
+        if (!selectedRequestId) return;
+        const parsedRoomId = validateSelectedRoomId();
+        if (!parsedRoomId) return;
+
+        runAction(
+            () => assignRoom(selectedRequestId, parsedRoomId),
+            'Room assigned successfully'
+        );
+    };
+
+    const handleUnassignRoom = () => {
+        if (!selectedRequestId) return;
+        runAction(
+            () => unassignRoom(selectedRequestId),
+            'Room unassigned successfully'
+        );
+    };
+
+    const openBlobInNewTab = (blob, fallbackName) => {
+        const blobUrl = URL.createObjectURL(blob);
+        const win = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+        if (!win) {
+            const anchor = document.createElement('a');
+            anchor.href = blobUrl;
+            anchor.download = fallbackName;
+            anchor.click();
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 15000);
+    };
+
+    const handleViewPhoto = async () => {
+        if (!selectedRequestId) return;
         try {
-            await rejectRequest(id, reason.trim());
-            fetch();
+            setActionLoading(true);
+            const blob = await getStudentRequestPhotoBlob(selectedRequestId);
+            openBlobInNewTab(blob, `request-${selectedRequestId}-photo`);
         } catch (err) {
-            alert('Failed to reject request');
+            setActionMessage(err?.response?.data?.message || 'Failed to fetch photo');
+        } finally {
+            setActionLoading(false);
         }
     };
 
-    const handleAssignRoom = async () => {
-        if (!assigningRequest || !selectedRoom[assigningRequest.id]) {
-            alert('Please select a room');
-            return;
-        }
+    const handleViewIdentity = async () => {
+        if (!selectedRequestId) return;
         try {
-            await assignRoom(assigningRequest.id, selectedRoom[assigningRequest.id]);
-            setShowAssignModal(false);
-            setAssigningRequest(null);
-            fetch();
+            setActionLoading(true);
+            const blob = await getStudentRequestIdentityBlob(selectedRequestId);
+            openBlobInNewTab(blob, `request-${selectedRequestId}-identity`);
         } catch (err) {
-            alert('Failed to assign room');
+            setActionMessage(err?.response?.data?.message || 'Failed to fetch identity document');
+        } finally {
+            setActionLoading(false);
         }
     };
-
-    const openAssignModal = (request) => {
-        setAssigningRequest(request);
-        setShowAssignModal(true);
-    };
-
-    if (loading) return <p className="p-4 text-center">Loading...</p>;
-    if (error) return <p className="p-4 text-center text-red-600">{error}</p>;
 
     return (
-        <div className="p-6 min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-            <h2 className="text-3xl font-bold text-blue-700 mb-6 text-center">Pending Student Requests</h2>
-            {requests.length === 0 && <p className="text-center text-gray-500">No pending requests.</p>}
-            <div className="space-y-4 max-w-4xl mx-auto">
-                {requests.map(r => (
-                    <div key={r.id} className="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="flex-1">
-                                <h3 className="text-xl font-semibold text-gray-800">{r.fullName}</h3>
-                                <p className="text-sm text-gray-600 mb-2">{r.userEmail}</p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
-                                    <p><span className="font-medium">Phone:</span> {r.phone}</p>
-                                    <p><span className="font-medium">Gender:</span> {r.gender || 'Not specified'}</p>
-                                    <p><span className="font-medium">Check-in:</span> {new Date(r.checkInDate).toLocaleDateString()}</p>
-                                    {r.checkOutDate && <p><span className="font-medium">Check-out:</span> {new Date(r.checkOutDate).toLocaleDateString()}</p>}
-                                </div>
+        <div className="p-6 bg-gray-50 min-h-screen">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Admin Request Review</h2>
+
+            {error && (
+                <div className="mb-4 p-3 rounded bg-red-100 text-red-700">{error}</div>
+            )}
+            {actionMessage && (
+                <div className="mb-4 p-3 rounded bg-blue-100 text-blue-700">{actionMessage}</div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg shadow p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-gray-800">Pending Requests</h3>
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={listMode}
+                                onChange={(e) => setListMode(e.target.value)}
+                                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                            >
+                                <option value="pending">Pending Only</option>
+                                <option value="all">All Requests</option>
+                            </select>
+                            <button
+                                onClick={() => fetchList()}
+                                className="px-3 py-1 rounded bg-gray-800 text-white text-sm"
+                                disabled={loading}
+                            >
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <p className="text-gray-600">Loading pending requests...</p>
+                    ) : requests.length === 0 ? (
+                        <p className="text-gray-600">No pending requests found.</p>
+                    ) : (
+                        <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+                            {requests.map((request) => (
+                                <button
+                                    key={request.id}
+                                    type="button"
+                                    className={`w-full text-left border rounded-lg p-3 transition ${selectedRequestId === request.id
+                                        ? 'border-indigo-500 ring-2 ring-indigo-100'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                    onClick={() => fetchRequestDetails(request.id)}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <p className="font-semibold text-gray-800">{request.fullName}</p>
+                                        <span className={`px-2 py-1 rounded text-xs ${statusBadge[request.status] || 'bg-gray-100 text-gray-800'}`}>
+                                            {String(request.status || 'UNKNOWN').replace('_', ' ')}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600">{request.userEmail}</p>
+                                    <p className="text-sm text-gray-600">Phone: {request.phone || 'N/A'}</p>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-white rounded-lg shadow p-4">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Request Details</h3>
+
+                    {detailsLoading && <p className="text-gray-600">Loading request details...</p>}
+                    {!detailsLoading && detailsError && (
+                        <p className="text-red-600">{detailsError}</p>
+                    )}
+                    {!detailsLoading && !detailsError && !selectedRequest && (
+                        <p className="text-gray-600">Select a request to review details.</p>
+                    )}
+
+                    {!detailsLoading && selectedRequest && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <p><span className="font-semibold">Name:</span> {selectedRequest.fullName}</p>
+                                <p><span className="font-semibold">DOB:</span> {selectedRequest.dateOfBirth || 'N/A'}</p>
+                                <p><span className="font-semibold">Gender:</span> {selectedRequest.gender || 'N/A'}</p>
+                                <p><span className="font-semibold">Nationality:</span> {selectedRequest.nationality || 'N/A'}</p>
+                                <p><span className="font-semibold">Phone:</span> {selectedRequest.phone || 'N/A'}</p>
+                                <p><span className="font-semibold">Guardian:</span> {selectedRequest.guardianName || 'N/A'}</p>
+                                <p><span className="font-semibold">Guardian Contact:</span> {selectedRequest.guardianContact || 'N/A'}</p>
+                                <p><span className="font-semibold">Emergency:</span> {selectedRequest.emergencyContact || 'N/A'}</p>
+                                <p><span className="font-semibold">Check-in:</span> {selectedRequest.checkInDate || 'N/A'}</p>
+                                <p><span className="font-semibold">Check-out:</span> {selectedRequest.checkOutDate || 'N/A'}</p>
+                                <p><span className="font-semibold">Address:</span> {selectedRequest.address || 'N/A'}</p>
+                                <p><span className="font-semibold">Status:</span> {String(selectedRequest.status || 'UNKNOWN').replace('_', ' ')}</p>
                             </div>
-                            <div className="flex flex-col space-y-2 ml-4">
+
+                            <div className="flex flex-wrap gap-2">
                                 <button
-                                    onClick={() => handleApprove(r.id)}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+                                    type="button"
+                                    className="px-3 py-2 rounded bg-gray-700 text-white disabled:opacity-60"
+                                    disabled={actionLoading}
+                                    onClick={handleViewPhoto}
                                 >
-                                    Approve
+                                    View Photo
                                 </button>
                                 <button
-                                    onClick={() => handleReject(r.id)}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+                                    type="button"
+                                    className="px-3 py-2 rounded bg-gray-700 text-white disabled:opacity-60"
+                                    disabled={actionLoading}
+                                    onClick={handleViewIdentity}
                                 >
-                                    Reject
+                                    View Identity
                                 </button>
-                                {r.status === 'APPROVED' && (
+                            </div>
+
+                            <div className="border-t pt-4 space-y-3">
+                                <div className="flex flex-wrap gap-2">
                                     <button
-                                        onClick={() => openAssignModal(r)}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                                        type="button"
+                                        className="px-3 py-2 rounded bg-green-600 text-white disabled:opacity-60"
+                                        disabled={actionLoading}
+                                        onClick={handleApprove}
+                                    >
+                                        Approve + Assign
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="px-3 py-2 rounded bg-red-600 text-white disabled:opacity-60"
+                                        disabled={actionLoading}
+                                        onClick={handleReject}
+                                    >
+                                        Reject
+                                    </button>
+                                </div>
+
+                                <p className="text-xs text-gray-500">
+                                    Approval requires room selection so student onboarding stays synced.
+                                </p>
+
+                                <textarea
+                                    value={rejectReason}
+                                    onChange={(e) => setRejectReason(e.target.value)}
+                                    placeholder="Rejection reason"
+                                    className="w-full border border-gray-300 rounded p-2"
+                                    rows={3}
+                                />
+
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <select
+                                        value={selectedRoomId}
+                                        onChange={(e) => setSelectedRoomId(e.target.value)}
+                                        className="flex-1 border border-gray-300 rounded p-2"
+                                    >
+                                        <option value="">Select room for assignment</option>
+                                        {availableRooms.map((room) => (
+                                            <option key={room.id} value={room.id}>
+                                                Room {room.roomNumber} (Available: {room.capacity - room.occupiedCount})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        className="px-3 py-2 rounded bg-indigo-600 text-white disabled:opacity-60"
+                                        disabled={actionLoading}
+                                        onClick={handleAssignRoom}
                                     >
                                         Assign Room
                                     </button>
-                                )}
+                                    <button
+                                        type="button"
+                                        className="px-3 py-2 rounded bg-slate-600 text-white disabled:opacity-60"
+                                        disabled={actionLoading}
+                                        onClick={handleUnassignRoom}
+                                    >
+                                        Unassign Room
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500">Submitted: {new Date(r.submittedAt).toLocaleString()}</p>
-                        {r.assignedRoomNumber && (
-                            <p className="text-sm text-green-600 font-medium mt-2">Room Assigned: {r.assignedRoomNumber}</p>
-                        )}
-                    </div>
-                ))}
-            </div>
-
-            {/* Assign Room Modal */}
-            {showAssignModal && assigningRequest && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold mb-4">Assign Room to {assigningRequest.fullName}</h3>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Available Room</label>
-                            <select
-                                value={selectedRoom[assigningRequest.id] || ''}
-                                onChange={(e) => setSelectedRoom(prev => ({ ...prev, [assigningRequest.id]: e.target.value }))}
-                                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none"
-                            >
-                                <option value="">Choose a room...</option>
-                                {availableRooms.map(room => (
-                                    <option key={room.id} value={room.id}>
-                                        Room {room.roomNumber} (Capacity: {room.capacity}, Available: {room.capacity - room.occupiedCount})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="flex space-x-3">
-                            <button
-                                onClick={handleAssignRoom}
-                                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
-                            >
-                                Assign Room
-                            </button>
-                            <button
-                                onClick={() => setShowAssignModal(false)}
-                                className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition font-medium"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 };

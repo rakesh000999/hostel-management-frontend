@@ -6,7 +6,7 @@ const Rooms = () => {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-7 text-white shadow-lg">
+        <div className="rounded-2xl bg-linear-to-r from-cyan-600 to-blue-600 px-6 py-7 text-white shadow-lg">
           <h1 className="text-2xl sm:text-3xl font-bold">Room Management</h1>
           <p className="mt-1 text-sm sm:text-base text-cyan-100">
             Create rooms, manage occupancy, and monitor assigned students.

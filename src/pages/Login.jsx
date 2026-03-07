@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import AuthContext from "../context/AuthContext";
 
-const Login = () => {
+const Login = ({ mode = "STUDENT" }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -34,11 +34,23 @@ const Login = () => {
 
     try {
       const userData = await login(formData.email, formData.password);
+      const role = String(userData?.role || "").toUpperCase();
+
+      if (mode === "ADMIN" && role !== "ADMIN") {
+        setError("Only admin users can sign in here.");
+        return;
+      }
+
+      if (mode === "STUDENT" && role === "ADMIN") {
+        setError("Please use the admin login page.");
+        return;
+      }
+
       // redirect based on role
-      if (userData?.role === 'ADMIN') {
-        navigate('/dashboard');
-      } else if (userData?.role === 'STUDENT') {
-        navigate('/student-request');
+      if (role === 'ADMIN') {
+        navigate('/admin/complaints');
+      } else if (role === 'STUDENT') {
+        navigate('/student/complaints');
       } else {
         navigate('/');
       }
@@ -52,7 +64,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100 px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-50 to-blue-100 px-4 py-8">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         <div className="flex justify-center mb-4">
           <div className="p-3 bg-indigo-100 rounded-full">
@@ -61,10 +73,12 @@ const Login = () => {
         </div>
 
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          Welcome Back
+          {mode === "ADMIN" ? "Admin Login" : "Student Login"}
         </h2>
         <p className="text-center text-gray-500 mb-6">
-          Sign in to your account to continue
+          {mode === "ADMIN"
+            ? "Sign in as admin to manage complaints"
+            : "Sign in to your account to continue"}
         </p>
 
         {(locationMessage || error) && (
@@ -137,14 +151,37 @@ const Login = () => {
         </form>
 
         <p className="text-center text-sm text-gray-600 mt-6">
-          Don't have an account?{" "}
-          <Link
-            to="/register"
-            className="text-indigo-600 font-semibold hover:text-indigo-700 transition"
-          >
-            Sign up here
-          </Link>
+          {mode === "ADMIN" ? (
+            <>
+              Need student access?{" "}
+              <Link
+                to="/login"
+                className="text-indigo-600 font-semibold hover:text-indigo-700 transition"
+              >
+                Student Login
+              </Link>
+            </>
+          ) : (
+            <>
+              Don't have an account?{" "}
+              <Link
+                to="/register"
+                className="text-indigo-600 font-semibold hover:text-indigo-700 transition"
+              >
+                Sign up here
+              </Link>
+            </>
+          )}
         </p>
+
+        {mode === "STUDENT" ? (
+          <p className="text-center text-sm text-gray-500 mt-2">
+            Admin?{" "}
+            <Link to="/admin/login" className="text-indigo-600 font-semibold hover:text-indigo-700 transition">
+              Login here
+            </Link>
+          </p>
+        ) : null}
 
       </div>
     </div>

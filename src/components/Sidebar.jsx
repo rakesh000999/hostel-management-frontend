@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Menu, X, Home, Users, DoorOpen, CreditCard, Calendar } from 'lucide-react';
+import { LogOut, Menu, X, Home, Users, DoorOpen, CreditCard, Calendar, MessageSquareWarning } from 'lucide-react';
 import { getUnreadCount } from '../api/notificationApi';
 import AuthContext from '../context/AuthContext';
 
@@ -33,6 +33,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         menuItems = [
             { path: '/dashboard', label: 'Dashboard', icon: Home },
             { path: '/pending-requests', label: 'Pending Requests', icon: Calendar },
+            { path: '/admin/complaints', label: 'Complaints', icon: MessageSquareWarning },
             { path: '/students', label: 'Students', icon: Users },
             { path: '/rooms', label: 'Rooms', icon: DoorOpen },
             { path: '/fees', label: 'Fees', icon: CreditCard },
@@ -42,6 +43,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             { path: '/browse-rooms', label: 'Browse Rooms', icon: DoorOpen },
             { path: '/student-request', label: 'Request Room', icon: Users },
             { path: '/my-requests', label: 'My Requests', icon: Calendar },
+            { path: '/student/complaints/new', label: 'Submit Complaint', icon: MessageSquareWarning },
+            { path: '/student/complaints', label: 'My Complaints', icon: MessageSquareWarning },
             {
                 path: '/notifications',
                 label: `Notifications${unreadCount > 0 ? ` (${unreadCount})` : ''}`,

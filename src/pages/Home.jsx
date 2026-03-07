@@ -11,9 +11,9 @@ const Home = () => {
     const message = location.state?.message;
 
     return (
-        <main className='min-h-screen bg-gradient-to-br from-indigo-900 via-gray-900 to-black text-gray-100'>
+        <main className='min-h-screen bg-linear-to-br from-indigo-900 via-gray-900 to-black text-gray-100'>
             <header className="relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-800 via-transparent to-indigo-900 opacity-60"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-indigo-800 via-transparent to-indigo-900 opacity-60"></div>
                 <div className="max-w-6xl mx-auto px-6 py-24 relative z-10 flex flex-col md:flex-row items-center gap-10">
                     <div className="md:w-1/2">
                         {message && (

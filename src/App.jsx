@@ -18,6 +18,10 @@ import Register from './pages/Register'
 import HostelRequestForm from './pages/student/HostelRequestForm'
 import MyRequestStatus from './pages/student/MyRequestStatus'
 import RequestQueue from './pages/admin/RequestQueue'
+import SubmitComplaint from './pages/student/SubmitComplaint'
+import MyComplaints from './pages/student/MyComplaints'
+import AdminComplaints from './pages/admin/AdminComplaints'
+import ComplaintDetail from './pages/admin/ComplaintDetail'
 
 function App() {
 
@@ -35,8 +39,11 @@ function App() {
             <Route path="/browse-rooms" element={<BrowseRooms />} />
             <Route path="/student-request" element={<ProtectedRoute roles={["STUDENT"]}><HostelRequestForm /></ProtectedRoute>} />
             <Route path="/my-requests" element={<ProtectedRoute roles={["STUDENT"]}><MyRequestStatus /></ProtectedRoute>} />
+            <Route path="/student/complaints/new" element={<ProtectedRoute roles={["STUDENT"]}><SubmitComplaint /></ProtectedRoute>} />
+            <Route path="/student/complaints" element={<ProtectedRoute roles={["STUDENT"]}><MyComplaints /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/pending-requests" element={<ProtectedRoute roles={["ADMIN"]}><RequestQueue /></ProtectedRoute>} />
+            <Route path="/admin/login" element={<Login mode="ADMIN" />} />
 
             {/* Protected Routes */}
             <Route path="/dashboard" element={<ProtectedRoute roles={["ADMIN"]}><Dashboard /></ProtectedRoute>} />
@@ -44,6 +51,8 @@ function App() {
             <Route path="/students/:id" element={<ProtectedRoute roles={["ADMIN"]}><ViewStudentDetail /></ProtectedRoute>} />
             <Route path="/fees" element={<ProtectedRoute roles={["ADMIN"]}><Fees /></ProtectedRoute>} />
             <Route path="/rooms" element={<ProtectedRoute roles={["ADMIN"]}><Rooms /></ProtectedRoute>} />
+            <Route path="/admin/complaints" element={<ProtectedRoute roles={["ADMIN"]}><AdminComplaints /></ProtectedRoute>} />
+            <Route path="/admin/complaints/:id" element={<ProtectedRoute roles={["ADMIN"]}><ComplaintDetail /></ProtectedRoute>} />
           </Routes>
         </DashboardLayout>
       </AuthProvider>

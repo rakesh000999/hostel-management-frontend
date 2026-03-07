@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { emitRoomDataChanged } from '../utils/roomEvents';
 
@@ -191,7 +192,14 @@ const StudentList = () => {
                                     className={`border-b ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-emerald-50 transition-colors duration-150`}
                                 >
                                     <td className="py-3 px-4">{student.id}</td>
-                                    <td className="py-3 px-4 font-medium text-gray-900">{student.name || student.fullName || '-'}</td>
+                                    <td className="py-3 px-4 font-medium text-gray-900">
+                                        <Link
+                                            to={`/students/${student.id}`}
+                                            className="text-indigo-700 hover:underline"
+                                        >
+                                            {student.name || student.fullName || '-'}
+                                        </Link>
+                                    </td>
                                     <td className="py-3 px-4">{student.gender || '-'}</td>
                                     <td className="py-3 px-4">{student.email || '-'}</td>
                                     <td className="py-3 px-4">{student.phone || '-'}</td>
@@ -235,7 +243,11 @@ const StudentList = () => {
                     students.map((student) => (
                         <div key={student.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                             <p className="text-sm text-gray-500">ID: {student.id}</p>
-                            <h4 className="text-lg font-semibold text-gray-900">{student.name || student.fullName || '-'}</h4>
+                            <h4 className="text-lg font-semibold text-gray-900">
+                                <Link to={`/students/${student.id}`} className="text-indigo-700 hover:underline">
+                                    {student.name || student.fullName || '-'}
+                                </Link>
+                            </h4>
                             <p className="text-sm text-gray-700">Gender: {student.gender || '-'}</p>
                             <p className="text-sm text-gray-700">Email: {student.email || '-'}</p>
                             <p className="text-sm text-gray-700">Phone: {student.phone || '-'}</p>

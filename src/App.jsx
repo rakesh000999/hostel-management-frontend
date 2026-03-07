@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import Students from './pages/Students'
 import Fees from './pages/Fees'
 import Rooms from './pages/Rooms'
+import RoomDetail from './pages/RoomDetail'
 import BrowseRooms from './pages/BrowseRooms'
 import ViewStudentDetail from './pages/ViewStudentDetail'
 import Bookings from './pages/Bookings'
@@ -51,6 +52,7 @@ function App() {
             <Route path="/students/:id" element={<ProtectedRoute roles={["ADMIN"]}><ViewStudentDetail /></ProtectedRoute>} />
             <Route path="/fees" element={<ProtectedRoute roles={["ADMIN"]}><Fees /></ProtectedRoute>} />
             <Route path="/rooms" element={<ProtectedRoute roles={["ADMIN"]}><Rooms /></ProtectedRoute>} />
+            <Route path="/rooms/:id" element={<ProtectedRoute roles={["ADMIN"]}><RoomDetail /></ProtectedRoute>} />
             <Route path="/admin/complaints" element={<ProtectedRoute roles={["ADMIN"]}><AdminComplaints /></ProtectedRoute>} />
             <Route path="/admin/complaints/:id" element={<ProtectedRoute roles={["ADMIN"]}><ComplaintDetail /></ProtectedRoute>} />
           </Routes>

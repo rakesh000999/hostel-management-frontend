@@ -10,6 +10,16 @@ export const getAvailableRooms = async () => {
   return response.data;
 };
 
+export const getRoomById = async (roomId) => {
+  const response = await api.get(`/rooms/${roomId}`);
+  return response.data;
+};
+
+export const deleteRoom = async (roomId) => {
+  const response = await api.delete(`/rooms/${roomId}`);
+  return response.data;
+};
+
 export const createRoomWithImage = async ({
   roomNumber,
   capacity,

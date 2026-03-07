@@ -1,31 +1,52 @@
 import { useEffect, useState } from "react";
-import { getMyStatus } from "../api/studentRequestApi";
+import { getMyRequests, getMyStatus } from "../api/studentRequestApi";
 
-const getStatusCode = (payload) => String(payload?.status || "").toUpperCase();
+const getStatusCode = (payload) => {
+  const raw =
+    payload?.status ||
+    payload?.requestStatus ||
+    payload?.currentStatus ||
+    payload?.data?.status ||
+    payload?.data?.requestStatus;
 
-const hasRoomAssignment = (payload) => {
-  const status = getStatusCode(payload);
+  return String(raw || "").toUpperCase();
+};
 
-  if (
-    ["ROOM_ASSIGNED", "ALLOCATED", "ACTIVE", "HOSTEL_ASSIGNED"].includes(status)
-  ) {
-    return true;
-  }
+const ELIGIBLE_STATUSES = new Set([
+  "APPROVED",
+  "ROOM_ASSIGNED",
+  "ALLOCATED",
+  "ACTIVE",
+  "HOSTEL_ASSIGNED",
+]);
 
+const hasAnyRoomHints = (payload) => {
   const roomHints = [
     payload?.assignedRoomId,
     payload?.roomId,
     payload?.student?.roomId,
     payload?.assignedRoomNumber,
     payload?.roomNumber,
+    payload?.data?.assignedRoomId,
+    payload?.data?.roomId,
+    payload?.data?.assignedRoomNumber,
+    payload?.data?.roomNumber,
   ];
 
-  if (
-    roomHints.some(
-      (value) =>
-        value !== null && value !== undefined && String(value).trim() !== "",
-    )
-  ) {
+  return roomHints.some(
+    (value) =>
+      value !== null && value !== undefined && String(value).trim() !== "",
+  );
+};
+
+const hasRoomAssignment = (payload) => {
+  const status = getStatusCode(payload);
+
+  if (ELIGIBLE_STATUSES.has(status)) {
+    return true;
+  }
+
+  if (hasAnyRoomHints(payload)) {
     return true;
   }
 
@@ -48,9 +69,21 @@ export const useComplaintEligibility = () => {
       try {
         setLoading(true);
         setError("");
-        const statusPayload = await getMyStatus();
+
+        const [statusPayload, requestsPayload] = await Promise.all([
+          getMyStatus(),
+          getMyRequests().catch(() => []),
+        ]);
+
+        const requests = Array.isArray(requestsPayload) ? requestsPayload : [];
+        const eligibleFromHistory = requests.some((request) =>
+          hasRoomAssignment(request),
+        );
+        const eligibleNow =
+          hasRoomAssignment(statusPayload) || eligibleFromHistory;
+
         if (!mounted) return;
-        setEligible(hasRoomAssignment(statusPayload));
+        setEligible(eligibleNow);
       } catch (err) {
         if (!mounted) return;
         setEligible(false);

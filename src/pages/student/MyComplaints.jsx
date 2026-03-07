@@ -1,15 +1,26 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getMyComplaints } from "../../api/complaintsApi";
 import LoadingState from "../../components/common/LoadingState";
 import EmptyState from "../../components/common/EmptyState";
 import StatusBadge from "../../components/common/StatusBadge";
+import { useComplaintEligibility } from "../../hooks/useComplaintEligibility";
 
 const MyComplaints = () => {
+    const { eligible, loading: eligibilityLoading, error: eligibilityError } =
+        useComplaintEligibility();
+
     const [complaints, setComplaints] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
+        if (!eligible) {
+            setComplaints([]);
+            setLoading(false);
+            return;
+        }
+
         const run = async () => {
             try {
                 setLoading(true);
@@ -24,7 +35,41 @@ const MyComplaints = () => {
         };
 
         run();
-    }, []);
+    }, [eligible]);
+
+    if (eligibilityLoading) {
+        return <LoadingState label="Checking hostel allocation..." />;
+    }
+
+    if (!eligible) {
+        return (
+            <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+                    <h2 className="text-xl font-bold">Complaint Status Is Available for Hostel Residents Only</h2>
+                    <p className="mt-2 text-sm">
+                        Once your room is assigned, you can view and track complaint updates here.
+                    </p>
+                    {eligibilityError ? (
+                        <p className="mt-2 text-xs text-amber-800">{eligibilityError}</p>
+                    ) : null}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        <Link
+                            to="/student-request"
+                            className="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+                        >
+                            Request Room
+                        </Link>
+                        <Link
+                            to="/my-requests"
+                            className="rounded-md border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100"
+                        >
+                            Check Request Status
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">

@@ -36,7 +36,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path='/bookings' element={<Bookings />} />
+            <Route path='/bookings' element={<ProtectedRoute roles={["STUDENT"]}><Bookings /></ProtectedRoute>} />
             <Route path="/browse-rooms" element={<BrowseRooms />} />
             <Route path="/student-request" element={<ProtectedRoute roles={["STUDENT"]}><HostelRequestForm /></ProtectedRoute>} />
             <Route path="/my-requests" element={<ProtectedRoute roles={["STUDENT"]}><MyRequestStatus /></ProtectedRoute>} />

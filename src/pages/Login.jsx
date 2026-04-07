@@ -36,15 +36,15 @@ const Login = ({ mode = "STUDENT" }) => {
       const userData = await login(formData.email, formData.password);
       const role = String(userData?.role || "").toUpperCase();
 
-      if (mode === "ADMIN" && role !== "ADMIN") {
-        setError("Only admin users can sign in here.");
-        return;
-      }
+      // if (mode === "ADMIN" && role !== "ADMIN") {
+      //   setError("Only admin users can sign in here.");
+      //   return;
+      // }
 
-      if (mode === "STUDENT" && role === "ADMIN") {
-        setError("Please use the admin login page.");
-        return;
-      }
+      // if (mode === "STUDENT" && role === "ADMIN") {
+      //   setError("Please use the admin login page.");
+      //   return;
+      // }
 
       // redirect based on role
       if (role === 'ADMIN') {
